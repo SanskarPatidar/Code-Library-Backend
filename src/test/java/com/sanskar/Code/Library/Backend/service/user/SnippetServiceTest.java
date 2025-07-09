@@ -1,7 +1,9 @@
 package com.sanskar.Code.Library.Backend.service.user;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest
 class SnippetServiceTest {
 
     @Test
