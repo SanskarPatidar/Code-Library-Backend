@@ -33,9 +33,9 @@ build/
 .vscode/
 
 ### Must ###
-spring.log
 *.log
-logs/
 
 ### Additional ###
-src/test/resources/application.yml
+*.yml
+*.properties
+
