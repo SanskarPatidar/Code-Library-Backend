@@ -8,6 +8,7 @@ class CodeLibraryBackendApplicationTests {
 
 	@Test
 	void contextLoads() {
+		System.out.println("MONGO_URI = " + System.getenv("MONGO_URI"));
 	}
 
 }

@@ -9,8 +9,6 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
-    env:
-      MONGO_URI: ${{ secrets.MONGO_URI }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,4 +33,5 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SanskarPatidar_Code-Library-Backend
