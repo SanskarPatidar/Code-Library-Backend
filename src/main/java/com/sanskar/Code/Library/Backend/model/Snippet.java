@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.util.Pair;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +35,9 @@ public class Snippet {
 
     @Builder.Default
     private List<String> pendingPushRequestIds = new ArrayList<>();
+
+    @Builder.Default
+    private List<Pair<String, LocalDateTime>> pullHistory = new ArrayList<>();
 
     @Builder.Default
     private boolean deleted = false; // soft delete

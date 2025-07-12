@@ -8,12 +8,12 @@ import com.sanskar.Code.Library.Backend.exception.NotFoundException;
 import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
 import com.sanskar.Code.Library.Backend.model.Snippet;
 import com.sanskar.Code.Library.Backend.repository.snippet.SnippetRepository;
-import com.sanskar.Code.Library.Backend.security.model.UserPrincipal;
+import com.sanskar.Code.Library.Backend.security.repository.UserRepository;
 import com.sanskar.Code.Library.Backend.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,6 +26,9 @@ public class SnippetService {
 
     @Autowired
     private SnippetRepository snippetRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private Utils utils;
@@ -54,10 +57,11 @@ public class SnippetService {
     }
 
     public PrivateSnippetResponseDTO updateSnippetDirectly(SnippetUpdateRequestDTO updatedSnippet) {
+
         String username = utils.getAuthenticatedUsername();
 
         Snippet existingSnippet = snippetRepository.findByIdAndDeletedFalse(updatedSnippet.getSnippetId())
-                .orElseThrow(() -> new NotFoundException("Snippet not found"));
+                .orElseThrow(() -> new NotFoundException("Snippet not found."));
 
         if (!existingSnippet.getAuthorName().equals(username)) {
             throw new UnauthorizedException("Only the author can directly update the snippet.");
@@ -65,23 +69,23 @@ public class SnippetService {
 
         existingSnippet.setTitle(updatedSnippet.getTitle());
         existingSnippet.setDescription(updatedSnippet.getDescription());
-        existingSnippet.setTags(updatedSnippet.getTags());
+        existingSnippet.setTags(updatedSnippet.getTags() != null? updatedSnippet.getTags() : new ArrayList<>());
         existingSnippet.setLanguage(updatedSnippet.getLanguage());
         existingSnippet.setCode(updatedSnippet.getCode());
         existingSnippet.setUpdatedAt(LocalDateTime.now());
         existingSnippet.setVersion(existingSnippet.getVersion() + 1);
 
         utils.saveVersionHistory(existingSnippet);
-
         return new PrivateSnippetResponseDTO(snippetRepository.save(existingSnippet));
     }
 
     public PrivateSnippetResponseDTO getSnippetById(String snippetId) { // By both author and collaborators
         String username = utils.getAuthenticatedUsername();
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(snippetId)
-                .orElseThrow(() -> new NotFoundException("Snippet not found"));
+                .orElseThrow(() -> new NotFoundException("Snippet not found."));
+        String userId = utils.getAuthenticatedUserId();
 
-        if (!snippet.getAuthorName().equals(username) && !snippet.getCollaborators().containsKey(username)) {
+        if (!snippet.getAuthorName().equals(username) && !snippet.getCollaborators().containsKey(userId)) {
             throw new UnauthorizedException("You do not have permission to view this snippet.");
         }
 
@@ -91,13 +95,11 @@ public class SnippetService {
     public Page<PrivateSnippetResponseDTO> getMySnippets(Pageable pageable) {
         String username = utils.getAuthenticatedUsername();
         return snippetRepository.findAllByAuthorNameAndDeletedFalse(username, pageable)
-                .map(PrivateSnippetResponseDTO::new);
+                .map(PrivateSnippetResponseDTO::new); // map function of page
     }
 
     public Page<PrivateSnippetResponseDTO> getCollaboratingSnippets(Pageable pageable) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userPrincipal.getId();
-
+        String userId = utils.getAuthenticatedUserId();
         return snippetRepository.findByCollaboratorIdAndDeletedFalse(userId, pageable)
                 .map(PrivateSnippetResponseDTO::new);
     }
@@ -105,7 +107,7 @@ public class SnippetService {
     public void deleteSnippet(String snippetId) {
         String username = utils.getAuthenticatedUsername();
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(snippetId)
-                .orElseThrow(() -> new NotFoundException("Snippet not found"));
+                .orElseThrow(() -> new NotFoundException("Snippet not found."));
 
         if (!snippet.getAuthorName().equals(username)) {
             throw new UnauthorizedException("Only the author can delete this snippet.");
@@ -115,10 +117,24 @@ public class SnippetService {
         snippetRepository.save(snippet);
     }
 
+    public void pullSnippet(String snippetId) {
+        String username = utils.getAuthenticatedUsername();
+        Snippet snippet = snippetRepository.findByIdAndDeletedFalse(snippetId)
+                .orElseThrow(() -> new NotFoundException("Snippet not found."));
+        String userId = utils.getAuthenticatedUserId();
+
+        if (!snippet.getAuthorName().equals(username) && !snippet.getCollaborators().containsKey(userId)) {
+            throw new UnauthorizedException("You do not have permission to pull this snippet.");
+        }
+
+        snippet.getPullHistory().add(Pair.of(username, LocalDateTime.now()));
+        snippetRepository.save(snippet);
+    }
+
     public PrivateSnippetResponseDTO togglePublicVisibility(String snippetId, boolean isPublic) {
         String username = utils.getAuthenticatedUsername();
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(snippetId)
-                .orElseThrow(() -> new NotFoundException("Snippet not found"));
+                .orElseThrow(() -> new NotFoundException("Snippet not found."));
 
         if (!snippet.getAuthorName().equals(username)) {
             throw new UnauthorizedException("Only the author can change visibility.");

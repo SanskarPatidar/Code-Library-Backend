@@ -10,16 +10,16 @@ import com.sanskar.Code.Library.Backend.model.Snippet;
 import com.sanskar.Code.Library.Backend.model.SnippetPushRequest;
 import com.sanskar.Code.Library.Backend.repository.snippet.SnippetRepository;
 import com.sanskar.Code.Library.Backend.repository.snippetpushrequest.SnippetPushRequestRepository;
-import com.sanskar.Code.Library.Backend.security.model.UserPrincipal;
 import com.sanskar.Code.Library.Backend.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,11 +41,22 @@ public class SnippetPushRequestService {
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(request.getSnippetId())
                 .orElseThrow(() -> new NotFoundException("Snippet not found"));
 
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userPrincipal.getId();
+        String userId = utils.getAuthenticatedUserId();
 
         if (!snippet.getCollaborators().containsKey(userId)) {
             throw new UnauthorizedException("You are not allowed to push to this snippet.");
+        }
+
+        List<Pair<String, LocalDateTime>> pullHistory = snippet.getPullHistory();
+        Collections.reverse(pullHistory);
+        LocalDateTime lastPullTime = pullHistory.stream()
+                .filter(pair -> pair.getFirst().equals(username))
+                .map(Pair::getSecond)
+                .findFirst()
+                .orElse(null);
+
+        if (lastPullTime == null || lastPullTime.isBefore(snippet.getUpdatedAt())) {
+            throw new InvalidResourceStateException("Conflict: You must pull the latest version before pushing changes.");
         }
 
         SnippetPushRequest savedRequest = snippetPushRequestRepository.save(
@@ -146,8 +157,7 @@ public class SnippetPushRequestService {
         Snippet snippet = snippetRepository.findById(snippetId)
                 .orElseThrow(() -> new NotFoundException("Snippet not found"));
 
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userPrincipal.getId();
+        String userId = utils.getAuthenticatedUserId();
 
         if (!snippet.getAuthorName().equals(username) && !snippet.getCollaborators().containsKey(userId)) {
             throw new UnauthorizedException("Only the author can view push requests for this snippet.");

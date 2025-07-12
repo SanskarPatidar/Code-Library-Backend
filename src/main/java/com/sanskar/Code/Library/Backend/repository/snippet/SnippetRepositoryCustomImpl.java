@@ -29,7 +29,7 @@ public class SnippetRepositoryCustomImpl implements SnippetRepositoryCustom{
         List<Snippet> snippets = mongoTemplate.find(query, Snippet.class);
         long count = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Snippet.class);
 
-        return new PageImpl<>(snippets, pageable, count);
+        return new PageImpl<>(snippets, pageable, count); // Page is interface, return PageImpl which takes list of snippets, making it Page of snippets
     }
 
 }

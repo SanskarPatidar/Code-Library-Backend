@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.util.Pair;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class PrivateSnippetResponseDTO {
     private boolean publicVisibility;
     private Map<String, String> collaborators;
     private List<String> pendingPushRequestIds;
+    private List<Pair<String, LocalDateTime>> pullHistory;
     private String title;
     private String description;
     private List<String> tags;
@@ -38,11 +40,12 @@ public class PrivateSnippetResponseDTO {
         this.authorName = snippet.getAuthorName();
         this.version = snippet.getVersion();
         this.publicVisibility = snippet.isPublicVisibility();
-        this.collaborators = new HashMap<>(snippet.getCollaborators());
-        this.pendingPushRequestIds = new ArrayList<>(snippet.getPendingPushRequestIds());
+        this.collaborators = snippet.getCollaborators();
+        this.pendingPushRequestIds = snippet.getPendingPushRequestIds();
+        this.pullHistory = snippet.getPullHistory();
         this.title = snippet.getTitle();
         this.description = snippet.getDescription();
-        this.tags = new ArrayList<>(snippet.getTags());
+        this.tags = snippet.getTags();
         this.language = snippet.getLanguage();
         this.code = snippet.getCode();
     }

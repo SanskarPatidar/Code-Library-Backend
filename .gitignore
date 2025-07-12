@@ -36,6 +36,5 @@ build/
 *.log
 
 ### Additional ###
-*.yml
-*.properties
+src/test/resources/application.yml
 

@@ -1,0 +1,5 @@
+id          |authorName       |publicVisibility  |deleted         |title                |tags                       |pendingRequests               |collaborators
+0           |testUser0        |true              |false           |Title0               |java                       |                              |
+1           |testUser0        |false             |false           |Title1               |python, java               |                              |1:testUser1
+2           |testUser0        |true              |true            |Title2               |javascript, python         |                              |1:testUser1
+3           |testUser1        |true              |false           |Title3               |java, python               |                              |

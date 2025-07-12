@@ -34,9 +34,8 @@ public class ProfileController {
         description = "Updates the profile of the authenticated user and returns his private profile."
     )
     @PutMapping("/me")
-    public ResponseEntity<String> updateMyProfile(@RequestBody UpdateProfileRequestDTO dto) {
-        profileService.updateMyProfile(dto);
-        return ResponseEntity.ok("Profile updated successfully");
+    public ResponseEntity<PrivateProfileResponseDTO> updateMyProfile(@RequestBody UpdateProfileRequestDTO dto) {
+        return ResponseEntity.ok(profileService.updateMyProfile(dto));
     }
 
     @Operation(

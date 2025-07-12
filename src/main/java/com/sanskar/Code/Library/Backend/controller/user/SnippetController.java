@@ -89,6 +89,16 @@ public class SnippetController {
     }
 
     @Operation(
+        summary = "Pull a code snippet",
+        description = "Informs backend about your pull."
+    )
+    @PutMapping
+    public ResponseEntity<Void> pullSnippet(@PathVariable String id) {
+        snippetService.pullSnippet(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
         summary = "Toggle the public visibility of a code snippet",
         description = "Change the public visibility of a code snippet and Returns the updated snippet. Default visibility is false (private)."
     )

@@ -4,6 +4,7 @@ import com.sanskar.Code.Library.Backend.model.Snippet;
 import com.sanskar.Code.Library.Backend.model.SnippetVersion;
 import com.sanskar.Code.Library.Backend.repository.snippetversion.SnippetVersionRepository;
 import com.sanskar.Code.Library.Backend.security.model.Token;
+import com.sanskar.Code.Library.Backend.security.model.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,5 +50,10 @@ public class Utils {
                 .revoked(false)
                 .deviceId(UUID.randomUUID().toString())
                 .build();
+    }
+
+    public String getAuthenticatedUserId() {
+        UserPrincipal userPrincipal = (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userPrincipal.getId();
     }
 }

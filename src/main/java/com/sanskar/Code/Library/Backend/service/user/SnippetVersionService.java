@@ -26,9 +26,6 @@ public class SnippetVersionService {
     private SnippetVersionRepository snippetVersionRepository;
 
     @Autowired
-    private Utils snippetUtil;
-
-    @Autowired
     private Utils utils;
 
     public Page<SnippetVersionResponseDTO> getVersions(String snippetId, Pageable pageable) {
@@ -66,7 +63,7 @@ public class SnippetVersionService {
         snippet.setVersion(snippet.getVersion() + 1);
 
         // Save new rollback version
-        snippetUtil.saveVersionHistory(snippet);
+        utils.saveVersionHistory(snippet);
 
         return new PrivateSnippetResponseDTO(snippetRepository.save(snippet));
     }

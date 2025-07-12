@@ -7,9 +7,8 @@ import com.sanskar.Code.Library.Backend.exception.NotFoundException;
 import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
 import com.sanskar.Code.Library.Backend.model.UserProfile;
 import com.sanskar.Code.Library.Backend.repository.userprofile.UserProfileRepository;
-import com.sanskar.Code.Library.Backend.security.model.UserPrincipal;
+import com.sanskar.Code.Library.Backend.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,9 +17,11 @@ public class ProfileService {
     @Autowired
     private UserProfileRepository profileRepository;
 
+    @Autowired
+    private Utils utils;
+
     public PrivateProfileResponseDTO getMyProfile() {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userPrincipal.getId();
+        String userId = utils.getAuthenticatedUserId();
 
         UserProfile profile = profileRepository.findByUserId(userId)
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
@@ -29,8 +30,7 @@ public class ProfileService {
     }
 
     public PrivateProfileResponseDTO updateMyProfile(UpdateProfileRequestDTO updatedProfile) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userPrincipal.getId();
+        String userId = utils.getAuthenticatedUserId();
 
         UserProfile profile = profileRepository.findByUserId(userId)
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
