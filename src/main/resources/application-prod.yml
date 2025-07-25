@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8080}  # Default to 8080 if PORT not set on deployment platform, for github -> deployment
+  port: ${PORT}  # Default to 8080 if PORT not set on deployment platform, for github -> deployment
 spring:
   data:
     mongodb:

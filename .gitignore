@@ -36,5 +36,5 @@ build/
 *.log
 
 ### Additional ###
-*.env
+project.env
 
