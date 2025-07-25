@@ -36,5 +36,5 @@ build/
 *.log
 
 ### Additional ###
-src/test/resources/application.yml
+*.env
 

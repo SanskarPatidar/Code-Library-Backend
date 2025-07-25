@@ -2,12 +2,14 @@ package com.sanskar.Code.Library.Backend.testutil;
 
 import com.sanskar.Code.Library.Backend.model.Snippet;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 @Slf4j
+@ActiveProfiles("dev")
 public class CsvLoader {
     public static List<Snippet> loadSnippets(String filePath){
         List<Snippet> snippets = new ArrayList<>();

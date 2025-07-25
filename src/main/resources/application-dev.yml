@@ -1,3 +1,7 @@
+server:
+  port: 8080
+  #servlet:
+    #context-path: for top level base uri
 spring:
   data:
     mongodb:
@@ -18,8 +22,8 @@ springdoc:
   swagger-ui:
     path: /docs
     tags-sorter: order
-access_token_expiration: 86400000  # 1000*60*60*24
-refresh_token_expiration: 604800000  # 1000*60*60*24*7
+access_token_expiration: 86400000  # 1000*60*60*24 # 1 day
+refresh_token_expiration: 604800000  # 1000*60*60*24*7 # 7 days
 
 
 

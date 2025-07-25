@@ -92,7 +92,7 @@ public class SnippetController {
         summary = "Pull a code snippet",
         description = "Informs backend about your pull."
     )
-    @PutMapping
+    @PutMapping("/pull/{id}")
     public ResponseEntity<Void> pullSnippet(@PathVariable String id) {
         snippetService.pullSnippet(id);
         return ResponseEntity.noContent().build();
