@@ -189,3 +189,18 @@ package com.sanskar.Code.Library.Backend.service.user;
 //    }
 //
 //}
+
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+
+@ActiveProfiles("dev")
+class SnippetServiceTest {
+
+    @Test
+    void createSnippet() {
+        assert(true);
+    }
+
+
+
+}
