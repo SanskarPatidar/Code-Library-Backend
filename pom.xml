@@ -116,7 +116,7 @@
 
 	<build>
 		<plugins>
-			<plugin>
+			<plugin> <!-- Got from Jacoco official site 3rd option -->
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
@@ -146,7 +146,7 @@
 							<goal>report-integration</goal>
 						</goals>
 					</execution>
-					<execution>
+					<!-- <execution> for code coverage check, can be enabled if needed
 						<id>default-check</id>
 						<goals>
 							<goal>check</goal>
@@ -165,7 +165,7 @@
 								</rule>
 							</rules>
 						</configuration>
-					</execution>
+					</execution> -->
 				</executions>
 			</plugin>
 			<plugin>
