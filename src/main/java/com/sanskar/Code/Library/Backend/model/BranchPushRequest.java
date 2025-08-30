@@ -16,28 +16,22 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SnippetPushRequest {
+public class BranchPushRequest {
     @Id
-    private String id; // UUID
+    private String id;
     private String snippetId;
-    private String requesterUsername;
-    private String message;
-
-    @Builder.Default
-    private boolean approved = false;
-
-    @Builder.Default
-    private boolean rejected = false;
-
+    private String targetBranchId;
+    private String requestedBy;
     private LocalDateTime requestedAt;
+    private String message;
+    @Builder.Default
+    private BranchPushRequestStatus status = BranchPushRequestStatus.PENDING;
+
     private String proposedCode;
     private String proposedTitle;
     private String proposedDescription;
-
     @Builder.Default
     private List<String> proposedTags = new ArrayList<>();
-
     private String proposedLanguage;
-
 }
 

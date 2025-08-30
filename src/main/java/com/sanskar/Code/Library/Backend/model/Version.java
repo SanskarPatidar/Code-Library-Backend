@@ -8,28 +8,26 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Document("snippet_versions")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SnippetVersion {
+public class Version {
     @Id
     private String id; // UUID
-    private String snippetId; // Link to main snippet
-    private int version;
-    private LocalDateTime updatedAt; // version only changes when code actually updates instead of SnippetPushRequest
-
-    private String title;
-    private String description;
-
+    private String snippetId;
+    private String branchId;
     @Builder.Default
-    private List<String> tags = new ArrayList<>();
+    private int version = 0;
+    private LocalDateTime createdAt;
+    private String message;
+
+    private String description;
     private String language;
     private String code;
 
-
+    @Builder.Default
+    private boolean deleted = false;
 }

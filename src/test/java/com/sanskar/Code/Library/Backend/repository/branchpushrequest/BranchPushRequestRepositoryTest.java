@@ -1,6 +1,6 @@
-package com.sanskar.Code.Library.Backend.repository.snippetpushrequest;
+package com.sanskar.Code.Library.Backend.repository.branchpushrequest;
 
-import com.sanskar.Code.Library.Backend.model.SnippetPushRequest;
+import com.sanskar.Code.Library.Backend.model.BranchPushRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,32 +17,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataMongoTest
 @ActiveProfiles("dev")
-class SnippetPushRequestRepositoryTest {
+class BranchPushRequestRepositoryTest {
 
     @Autowired
-    SnippetPushRequestRepository repository;
+    BranchPushRequestRepository repository;
 
     @BeforeEach
     void setUp() {
         repository.deleteAll();
 
-        SnippetPushRequest req1 = SnippetPushRequest.builder()
+        BranchPushRequest req1 = BranchPushRequest.builder()
                 .id("1")
-                .requesterUsername("user1")
+                .requestedBy("user1")
                 .requestedAt(LocalDateTime.now().minusMinutes(10))
                 .snippetId("s1")
                 .build();
 
-        SnippetPushRequest req2 = SnippetPushRequest.builder()
+        BranchPushRequest req2 = BranchPushRequest.builder()
                 .id("2")
-                .requesterUsername("user1")
+                .requestedBy("user1")
                 .requestedAt(LocalDateTime.now())
                 .snippetId("s2")
                 .build();
 
-        SnippetPushRequest req3 = SnippetPushRequest.builder()
+        BranchPushRequest req3 = BranchPushRequest.builder()
                 .id("3")
-                .requesterUsername("user1")
+                .requestedBy("user1")
                 .requestedAt(LocalDateTime.now().plusMinutes(10))
                 .snippetId("s1")
                 .rejected(true)
@@ -57,14 +57,14 @@ class SnippetPushRequestRepositoryTest {
         assertEquals(3, page.getTotalElements());
         List<LocalDateTime> timeList = page.getContent()
                 .stream()
-                .map(SnippetPushRequest::getRequestedAt)
+                .map(BranchPushRequest::getRequestedAt)
                 .toList();
         assertThat(timeList).isSortedAccordingTo(Comparator.reverseOrder());
     }
 
     @Test
     void findBySnippetIdValidTest(){
-        var page = repository.findBySnippetIdValid("s1", PageRequest.of(0, 10));
+        var page = repository.findAllBySnippetIdAndValidAsPage("s1", PageRequest.of(0, 10));
         assertEquals(1, page.getTotalElements());
     }
 }

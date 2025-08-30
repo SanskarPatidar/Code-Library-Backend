@@ -1,5 +1,6 @@
 package com.sanskar.Code.Library.Backend.security.service;
 
+import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
 import com.sanskar.Code.Library.Backend.security.repository.token.TokenRepository;
 import com.sanskar.Code.Library.Backend.service.redis.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,9 +23,6 @@ public class LogoutService implements LogoutHandler {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return;
-        }
         String jwt = authHeader.substring(7);
         var storedToken = tokenRepository.findByToken(jwt) // by access token, not refresh token
                 .orElse(null);

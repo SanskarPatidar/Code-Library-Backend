@@ -53,11 +53,6 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable) // disable form login, as we are using JWT for authentication
                 // disable form login, as we are using JWT for authentication
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ensures our JWTFilter runs before Spring’s built-in UsernamePasswordAuthenticationFilter
-                .logout(logout ->
-                        logout.logoutUrl("/auth/logout") // no need for controller customization
-                                .addLogoutHandler(logoutHandler)
-                                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
-                )
                 .build();
                 // This way, any valid JWT in the request is parsed and the user’s identity is set before form-login or basic-auth filters run
 

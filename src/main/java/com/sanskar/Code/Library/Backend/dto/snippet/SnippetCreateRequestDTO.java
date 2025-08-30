@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -15,10 +16,12 @@ import java.util.List;
 public class SnippetCreateRequestDTO {
     @NotBlank(message = "title cannot be blank")
     private String title;
-    private String description;
-    private String language;
-    private String code;
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
     private boolean publicVisibility;
     private boolean allowPublicDownload;
+    private String message;
+
+    private String description;
+    private String code;
+    private String language;
 }

@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface SnippetRepository extends MongoRepository<Snippet, String>, SnippetRepositoryCustom {
     Optional<Snippet> findByIdAndDeletedFalse(String id); // QUERY METHOD DSL
+    Page<Snippet> findAllByAuthorNameAndDeletedFalse(String authorName, Pageable pageable);
     Page<Snippet> findByPublicVisibilityTrueAndDeletedFalse(Pageable pageable);
     Page<Snippet> findByPublicVisibilityTrueAndDeletedFalseAndTagsIn(List<String> tags, Pageable pageable);
-    Page<Snippet> findAllByAuthorNameAndDeletedFalse(String authorName, Pageable pageable);
 }

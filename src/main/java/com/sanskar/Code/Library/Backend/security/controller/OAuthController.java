@@ -1,8 +1,8 @@
 package com.sanskar.Code.Library.Backend.security.controller;
 
-import com.sanskar.Code.Library.Backend.security.dto.AuthResponse;
-import com.sanskar.Code.Library.Backend.security.dto.OAuthCodeExchangeRequest;
-import com.sanskar.Code.Library.Backend.security.dto.PasswordRequest;
+import com.sanskar.Code.Library.Backend.security.dto.AuthResponseDTO;
+import com.sanskar.Code.Library.Backend.security.dto.OAuthCodeExchangeRequestDTO;
+import com.sanskar.Code.Library.Backend.security.dto.PasswordRequestDTO;
 import com.sanskar.Code.Library.Backend.security.service.OAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,8 +24,8 @@ public class OAuthController {
         description = "Exchanges the authorization code received from Google for an access token and user information."
     )
     @GetMapping("/google/callback")
-    public ResponseEntity<AuthResponse> handleGoogleCallback(@RequestBody OAuthCodeExchangeRequest oAuthCodeExchangeRequest){
-        return ResponseEntity.ok(oAuthService.handleGoogleCallback(oAuthCodeExchangeRequest));
+    public ResponseEntity<AuthResponseDTO> handleGoogleCallback(@RequestBody OAuthCodeExchangeRequestDTO oAuthCodeExchangeRequestDTO){
+        return ResponseEntity.ok(oAuthService.handleGoogleCallback(oAuthCodeExchangeRequestDTO));
     }
 
     @Operation(
@@ -34,8 +34,8 @@ public class OAuthController {
     )
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/set-password")
-    public ResponseEntity<String> setPasswordForOAuthUser(@RequestBody PasswordRequest passwordRequest) {
-        oAuthService.setPasswordForOAuthUser(passwordRequest);
+    public ResponseEntity<String> setPasswordForOAuthUser(@RequestBody PasswordRequestDTO passwordRequestDTO) {
+        oAuthService.setPasswordForOAuthUser(passwordRequestDTO);
         return ResponseEntity.ok("Password set successfully for OAuth user.");
     }
 }

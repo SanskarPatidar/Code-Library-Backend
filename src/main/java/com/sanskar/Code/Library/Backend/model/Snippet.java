@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.util.Pair;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,33 +20,23 @@ import java.util.Map;
 @AllArgsConstructor
 public class Snippet {
     @Id
-    private String id; // UUID from clients
+    private String id;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime mainUpdatedAt;
     private String authorName;
 
-    @Builder.Default
-    private int version = 0;
-    private boolean publicVisibility;
-
-    @Builder.Default
-    private Map<String, String> collaborators = new HashMap<>();  // ids who have access to this snippet's updates, not including owner
-
-    @Builder.Default
-    private List<String> pendingPushRequestIds = new ArrayList<>();
-
-    @Builder.Default
-    private List<Pair<String, LocalDateTime>> pullHistory = new ArrayList<>();
-
-    @Builder.Default
-    private boolean deleted = false; // soft delete
-
     private String title;
-    private String description;
-
     @Builder.Default
     private List<String> tags = new ArrayList<>();
 
-    private String language;
-    private String code;
+    private String latestDescription;
+    private String latestCode;
+    private String latestLanguage;
+
+    private boolean publicVisibility;
+    private boolean allowPublicDownload;
+    @Builder.Default
+    private Map<String, String> collaborators = new HashMap<>();
+    @Builder.Default
+    private boolean deleted = false; // softly delete
 }

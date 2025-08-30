@@ -37,15 +37,6 @@ public class SnippetController {
     }
 
     @Operation(
-        summary = "Update an existing code snippet",
-        description = "Updates an existing code snippet with the provided details. Returns the updated snippet."
-    )
-    @PutMapping
-    public ResponseEntity<PrivateSnippetResponseDTO> updateSnippet(@RequestBody @Valid SnippetUpdateRequestDTO updatedSnippet) {
-        return ResponseEntity.ok(snippetService.updateSnippetDirectly(updatedSnippet));
-    }
-
-    @Operation(
         summary = "Get a code snippet by ID",
         description = "Retrieves a code snippet by its snippetId. Returns the snippet details."
     )
@@ -89,23 +80,29 @@ public class SnippetController {
     }
 
     @Operation(
-        summary = "Pull a code snippet",
-        description = "Informs backend about your pull."
-    )
-    @PutMapping("/pull/{id}")
-    public ResponseEntity<Void> pullSnippet(@PathVariable String id) {
-        snippetService.pullSnippet(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Operation(
         summary = "Toggle the public visibility of a code snippet",
         description = "Change the public visibility of a code snippet and Returns the updated snippet. Default visibility is false (private)."
     )
     @PatchMapping("/visibility/{id}")
-    public ResponseEntity<PrivateSnippetResponseDTO> togglePublicVisibility(@PathVariable String id, @RequestParam(defaultValue = "false") boolean isPublic) {
+    public ResponseEntity<PrivateSnippetResponseDTO> togglePublicVisibility(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "false") boolean isPublic
+    ) {
         return ResponseEntity.ok(snippetService.togglePublicVisibility(id, isPublic));
     }
+
+    @Operation(
+        summary = "Toggle the public download permission of a code snippet",
+        description = "Change the public download permission of a code snippet and Returns the updated snippet. Default permission is false (not allowed)."
+    )
+    @PatchMapping("/public-download/{id}")
+    public ResponseEntity<PrivateSnippetResponseDTO> togglePublicDownload(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "false") boolean allowPublicDownload
+    ) {
+        return ResponseEntity.ok(snippetService.toggleAllowPublicDownload(id, allowPublicDownload));
+    }
+
 
     @Operation(
         summary = "Get public code snippets",

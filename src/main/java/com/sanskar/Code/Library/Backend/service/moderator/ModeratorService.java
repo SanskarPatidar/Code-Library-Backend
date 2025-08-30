@@ -15,15 +15,11 @@ public class ModeratorService {
     private SnippetRepository snippetRepository;
 
     public void deletePublicSnippet(String snippetId) {
-        Snippet snippet = snippetRepository.findById(snippetId)
+        Snippet snippet = snippetRepository.findByIdAndDeletedFalse(snippetId)
                 .orElseThrow(() -> new NotFoundException("Snippet not found"));
 
         if (!snippet.isPublicVisibility()) {
             throw new UnauthorizedException("Only public snippets can be deleted by moderators.");
-        }
-
-        if (snippet.isDeleted()) {
-            throw new InvalidResourceStateException("Snippet is already deleted.");
         }
 
         snippet.setDeleted(true);

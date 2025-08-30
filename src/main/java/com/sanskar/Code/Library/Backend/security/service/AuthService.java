@@ -4,9 +4,9 @@ package com.sanskar.Code.Library.Backend.security.service;
 import com.sanskar.Code.Library.Backend.exception.UserAlreadyExistsException;
 import com.sanskar.Code.Library.Backend.model.UserProfile;
 import com.sanskar.Code.Library.Backend.repository.userprofile.UserProfileRepository;
-import com.sanskar.Code.Library.Backend.security.dto.AuthResponse;
-import com.sanskar.Code.Library.Backend.security.dto.LoginRequest;
-import com.sanskar.Code.Library.Backend.security.dto.RegisterRequest;
+import com.sanskar.Code.Library.Backend.security.dto.AuthResponseDTO;
+import com.sanskar.Code.Library.Backend.security.dto.LoginRequestDTO;
+import com.sanskar.Code.Library.Backend.security.dto.RegisterRequestDTO;
 import com.sanskar.Code.Library.Backend.security.model.Role;
 import com.sanskar.Code.Library.Backend.security.model.Token;
 import com.sanskar.Code.Library.Backend.security.model.User;
@@ -25,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -66,16 +67,19 @@ public class AuthService { // Main JWT business logic service class, MyUserDetai
     @Autowired
     private UserProfileRepository profileRepository;
 
-    public AuthResponse register(RegisterRequest registerRequest) {
-        if (repo.existsByUsername(registerRequest.getUsername())) {
+    public AuthResponseDTO register(RegisterRequestDTO registerRequestDTO) {
+        if (repo.existsByUsername(registerRequestDTO.getUsername())) {
             throw new UserAlreadyExistsException("Username already exists.");
+        }
+        if(repo.existsByEmail(registerRequestDTO.getEmail())) {
+            throw new UserAlreadyExistsException("Email already exists.");
         }
 
         User user = User.builder()
-                .username(registerRequest.getUsername())
-                .password(encoder.encode(registerRequest.getPassword()))
+                .username(registerRequestDTO.getUsername())
+                .password(encoder.encode(registerRequestDTO.getPassword()))
                 .isPasswordSet(true)
-                .email(registerRequest.getEmail())
+                .email(registerRequestDTO.getEmail())
                 .build();
         var savedUser = repo.save(user);
 
@@ -95,24 +99,25 @@ public class AuthService { // Main JWT business logic service class, MyUserDetai
                 .build();
         profileRepository.save(profile);
 
-        return AuthResponse.builder()
+        return AuthResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .username(savedUser.getUsername())
                 .email(savedUser.getEmail())
                 .userId(savedUser.getId())
                 .deviceId(accessTokenEntity.getDeviceId())
+                .roles(List.of(Role.USER))
                 .build();
     }
 
-    public AuthResponse login(LoginRequest loginRequest) {
+    public AuthResponseDTO login(LoginRequestDTO loginRequestDTO) {
         try {
             // Calls UserDetailsService which was passed to AuthProvider in SecurityConfig
             // Authentication Object contains principal(UserDetails)
             // Using this approach when we don't trust user's details
             // call it DELEGATED AUTHENTICATION
             Authentication authentication = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getLoginString(), loginRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(loginRequestDTO.getLoginString(), loginRequestDTO.getPassword())
             );
             // This will do all validations of username and password
 
@@ -127,13 +132,14 @@ public class AuthService { // Main JWT business logic service class, MyUserDetai
             tokenRepository.save(accessTokenEntity);
             refreshTokenService.storeRefreshToken(userPrincipal.getId(), accessTokenEntity.getDeviceId(), refreshToken);
 
-            return AuthResponse.builder()
+            return AuthResponseDTO.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .username(userPrincipal.getUsername())
                     .email(userPrincipal.getEmail())
                     .userId(userPrincipal.getId())
                     .deviceId(accessTokenEntity.getDeviceId())
+                    .roles(userPrincipal.getRoles())
                     .build();
 
         } catch (BadCredentialsException ex) {
@@ -154,7 +160,7 @@ public class AuthService { // Main JWT business logic service class, MyUserDetai
         tokenRepository.saveAll(validUserTokens);
     }
 
-    public AuthResponse refresh(String deviceId, HttpServletRequest request) throws IOException {
+    public AuthResponseDTO refresh(String deviceId, HttpServletRequest request) throws IOException {
         // JWT filter like validation
         String raw = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (raw == null || !raw.startsWith("Bearer ")) {
@@ -180,13 +186,14 @@ public class AuthService { // Main JWT business logic service class, MyUserDetai
                 tokenRepository.save(accessTokenEntity);
                 refreshTokenService.storeRefreshToken(user.getId(), deviceId, refreshToken);
 
-                return AuthResponse.builder()
+                return AuthResponseDTO.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .username(user.getUsername())
                         .email(user.getEmail())
                         .userId(user.getId())
                         .deviceId(deviceId)
+                        .roles(user.getRoles())
                         .build();
             }
         }

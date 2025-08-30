@@ -17,27 +17,28 @@ import java.util.Map;
 public class PublicSnippetResponseDTO {
     private String snippetId;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime mainUpdatedAt;
     private String authorName;
-    private int version;
+    private int mainVersion;
     private Map<String, String> collaborators;
+
     private String title;
-    private String description;
     private List<String> tags;
-    private String language;
+    private String description;
     private String code;
+    private String language;
 
     public PublicSnippetResponseDTO(Snippet snippet) {
         this.snippetId = snippet.getId();
         this.createdAt = snippet.getCreatedAt();
-        this.updatedAt = snippet.getUpdatedAt();
+        this.mainUpdatedAt = snippet.getMainUpdatedAt();
         this.authorName = snippet.getAuthorName();
-        this.version = snippet.getVersion();
         this.collaborators = snippet.getCollaborators();
+
         this.title = snippet.getTitle();
-        this.description = snippet.getDescription();
         this.tags = snippet.getTags();
-        this.language = snippet.getLanguage();
-        this.code = snippet.getCode();
+        this.description = snippet.getLatestDescription();
+        this.code = snippet.getLatestCode();
+        this.language = snippet.getLatestLanguage();
     }
 }

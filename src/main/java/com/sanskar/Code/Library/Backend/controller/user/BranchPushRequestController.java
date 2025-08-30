@@ -1,10 +1,10 @@
 package com.sanskar.Code.Library.Backend.controller.user;
 
 import com.sanskar.Code.Library.Backend.dto.PageResponse;
+import com.sanskar.Code.Library.Backend.dto.branchpushrequest.BranchPushRequestIncDTO;
+import com.sanskar.Code.Library.Backend.dto.branchpushrequest.BranchPushRequestOutDTO;
 import com.sanskar.Code.Library.Backend.dto.snippet.PrivateSnippetResponseDTO;
-import com.sanskar.Code.Library.Backend.dto.snippetpushrequest.SnippetPushRequestIncDTO;
-import com.sanskar.Code.Library.Backend.dto.snippetpushrequest.SnippetPushRequestOutDTO;
-import com.sanskar.Code.Library.Backend.service.user.SnippetPushRequestService;
+import com.sanskar.Code.Library.Backend.service.user.BranchPushRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,16 +19,16 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/push-request")
-public class SnippetPushRequestController {
+public class BranchPushRequestController {
     @Autowired
-    private SnippetPushRequestService pushService;
+    private BranchPushRequestService pushService;
 
     @Operation(
         summary = "Create a new snippet push request",
         description = "Creates a new push request for a snippet. The request must be valid and the user must have permission to create it (i.e. must be a collaborator of that snippet)."
     )
     @PostMapping
-    public ResponseEntity<SnippetPushRequestOutDTO> createPushRequest(@RequestBody @Valid SnippetPushRequestIncDTO pushRequest) {
+    public ResponseEntity<BranchPushRequestOutDTO> createPushRequest(@RequestBody @Valid BranchPushRequestIncDTO pushRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pushService.createPushRequest(pushRequest));
     }
 
@@ -37,7 +37,7 @@ public class SnippetPushRequestController {
         description = "Approves a push request for a snippet. The user must have permission to approve the request (i.e. must be the author of that snippet)."
     )
     @PostMapping("/{requestId}/approve")
-    public ResponseEntity<PrivateSnippetResponseDTO> approvePushRequest(@PathVariable String requestId) {
+    public ResponseEntity<BranchPushRequestOutDTO> approvePushRequest(@PathVariable String requestId) {
         return ResponseEntity.ok(pushService.approvePushRequest(requestId));
     }
 
@@ -56,7 +56,7 @@ public class SnippetPushRequestController {
         description = "Retrieves all valid push requests for a specific snippet. The user must be author or collaborator of that snippet."
     )
     @GetMapping("/snippet/{snippetId}")
-    public ResponseEntity<PageResponse<SnippetPushRequestOutDTO>> getValidPushRequestsForSnippet(
+    public ResponseEntity<PageResponse<BranchPushRequestOutDTO>> getValidPushRequestsForSnippet(
             @PathVariable String snippetId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -69,7 +69,7 @@ public class SnippetPushRequestController {
         description = "Retrieves all push requests created by the authenticated user."
     )
     @GetMapping("/my")
-    public ResponseEntity<PageResponse<SnippetPushRequestOutDTO>> getMyPushRequests(
+    public ResponseEntity<PageResponse<BranchPushRequestOutDTO>> getMyPushRequests(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {

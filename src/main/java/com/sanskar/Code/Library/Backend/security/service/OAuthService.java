@@ -2,9 +2,9 @@ package com.sanskar.Code.Library.Backend.security.service;
 
 import com.sanskar.Code.Library.Backend.exception.NotFoundException;
 import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
-import com.sanskar.Code.Library.Backend.security.dto.AuthResponse;
-import com.sanskar.Code.Library.Backend.security.dto.OAuthCodeExchangeRequest;
-import com.sanskar.Code.Library.Backend.security.dto.PasswordRequest;
+import com.sanskar.Code.Library.Backend.security.dto.AuthResponseDTO;
+import com.sanskar.Code.Library.Backend.security.dto.OAuthCodeExchangeRequestDTO;
+import com.sanskar.Code.Library.Backend.security.dto.PasswordRequestDTO;
 import com.sanskar.Code.Library.Backend.security.model.Token;
 import com.sanskar.Code.Library.Backend.security.model.User;
 import com.sanskar.Code.Library.Backend.security.model.UserPrincipal;
@@ -35,7 +35,7 @@ public class OAuthService {
     private String clientSecret;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private RestTemplate restTemplate; // other spring provided HTTP clients: FeignClient, RestClient, WebClient
 
     @Autowired
     private UserRepository userRepository;
@@ -55,15 +55,15 @@ public class OAuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public AuthResponse handleGoogleCallback(OAuthCodeExchangeRequest oAuthCodeExchangeRequest) {
+    public AuthResponseDTO handleGoogleCallback(OAuthCodeExchangeRequestDTO oAuthCodeExchangeRequestDTO) {
         try {
             String tokenEndpoint = "https://oauth2.googleapis.com/token";
 
             MultiValueMap<String, String> tokenRequestParams = new LinkedMultiValueMap<>();
-            tokenRequestParams.add("code", oAuthCodeExchangeRequest.getCode());
+            tokenRequestParams.add("code", oAuthCodeExchangeRequestDTO.getCode());
             tokenRequestParams.add("client_id", clientId);
             tokenRequestParams.add("client_secret", clientSecret);
-            tokenRequestParams.add("redirect_uri", oAuthCodeExchangeRequest.getRedirectUri());
+            tokenRequestParams.add("redirect_uri", oAuthCodeExchangeRequestDTO.getRedirectUri());
             tokenRequestParams.add("grant_type", "authorization_code");
 
             HttpHeaders tokenHeaders = new HttpHeaders();
@@ -104,13 +104,14 @@ public class OAuthService {
                 tokenRepository.save(accessTokenEntity);
                 refreshTokenService.storeRefreshToken(user.getId(), accessTokenEntity.getDeviceId(), refreshToken); // Store refresh token in Redis
 
-                return AuthResponse.builder()
+                return AuthResponseDTO.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .username(user.getUsername())
                         .email(user.getEmail())
                         .userId(user.getId())
                         .deviceId(accessTokenEntity.getDeviceId())
+                        .roles(user.getRoles())
                         .build();
 
             }
@@ -122,7 +123,7 @@ public class OAuthService {
         }
     }
 
-    public void setPasswordForOAuthUser(PasswordRequest passwordRequest) {
+    public void setPasswordForOAuthUser(PasswordRequestDTO passwordRequestDTO) {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = userPrincipal.getId();
 
@@ -133,7 +134,7 @@ public class OAuthService {
             throw new UnauthorizedException("Password is already set for this OAuth user.");
         }
 
-        String encodedPassword = passwordEncoder.encode(passwordRequest.getNewPassword());
+        String encodedPassword = passwordEncoder.encode(passwordRequestDTO.getNewPassword());
         user.setPassword(encodedPassword);
         user.setPasswordSet(true);
         userRepository.save(user);

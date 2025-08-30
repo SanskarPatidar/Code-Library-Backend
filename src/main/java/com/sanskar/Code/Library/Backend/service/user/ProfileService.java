@@ -42,7 +42,7 @@ public class ProfileService {
         return new PrivateProfileResponseDTO(profileRepository.save(profile));
     }
 
-    public PublicProfileResponseDTO getPublicProfile(String username) {
+    public PublicProfileResponseDTO getPublicProfiles(String username) {
         UserProfile profile = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 

@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 /*
 QUESTION: Why You Do This Step?
 ANSWER:
@@ -32,6 +33,7 @@ public class UserPrincipal implements UserDetails {
     public String getEmail() {
         return user.getEmail();
     }
+    public List<Role> getRoles() { return user.getRoles(); }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() { // AUTHORIZATION

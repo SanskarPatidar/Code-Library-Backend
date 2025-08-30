@@ -1,16 +1,19 @@
 package com.sanskar.Code.Library.Backend.security.controller;
 
-import com.sanskar.Code.Library.Backend.security.dto.AuthResponse;
-import com.sanskar.Code.Library.Backend.security.dto.LoginRequest;
-import com.sanskar.Code.Library.Backend.security.dto.RegisterRequest;
+import com.sanskar.Code.Library.Backend.security.dto.AuthResponseDTO;
+import com.sanskar.Code.Library.Backend.security.dto.LoginRequestDTO;
+import com.sanskar.Code.Library.Backend.security.dto.RegisterRequestDTO;
 import com.sanskar.Code.Library.Backend.security.service.AuthService;
+import com.sanskar.Code.Library.Backend.security.service.LogoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -23,22 +26,25 @@ public class AuthController {
     @Autowired
     private AuthService userSecurityService;
 
+    @Autowired
+    private LogoutService logoutService;
+
     @Operation(
         summary = "Register a new user",
-        description = "Endpoint for user registration. Accepts a RegisterRequest object containing user details."
+        description = "Endpoint for user registration. Accepts a RegisterRequestDTO object containing user details."
     )
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest registerRequest){
-        return ResponseEntity.ok(userSecurityService.register(registerRequest)); // can check difference between different functions of ResponseEntity
+    public ResponseEntity<AuthResponseDTO> register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO){
+        return ResponseEntity.ok(userSecurityService.register(registerRequestDTO)); // can check difference between different functions of ResponseEntity
     }
 
     @Operation(
         summary = "User login",
-        description = "Endpoint for user login. Accepts a LoginRequest object containing loginString(username or email) and password."
+        description = "Endpoint for user login. Accepts a LoginRequestDTO object containing loginString(username or email) and password."
     )
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest loginRequest){
-        return ResponseEntity.ok(userSecurityService.login(loginRequest));
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid LoginRequestDTO loginRequestDTO){
+        return ResponseEntity.ok(userSecurityService.login(loginRequestDTO));
     }
 
     @Operation(
@@ -47,8 +53,18 @@ public class AuthController {
     )
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/refresh/{deviceId}")
-    public AuthResponse refresh(@PathVariable String deviceId, HttpServletRequest request) throws IOException {
-        return userSecurityService.refresh(deviceId, request);
+    public ResponseEntity<AuthResponseDTO> refresh(@PathVariable String deviceId, HttpServletRequest request) throws IOException {
+        return ResponseEntity.ok(userSecurityService.refresh(deviceId, request));
+    }
+
+    @Operation(
+        summary = "Logout user",
+        description = "Endpoint to logout the user by invalidating the access token and refresh token."
+    )
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        logoutService.logout(request, response, authentication);
+        return ResponseEntity.ok("Logged out successfully");
     }
 
 }

@@ -39,7 +39,6 @@ public class CollaboratorService {
             snippet.getCollaborators().put(collaboratorId, collaborator.getUsername());
         }
 
-
         return new PrivateSnippetResponseDTO(snippetRepository.save(snippet));
     }
 
