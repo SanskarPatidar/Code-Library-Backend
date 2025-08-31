@@ -11,5 +11,4 @@ import java.util.List;
 @Repository
 public interface BranchPushRequestRepository extends MongoRepository<BranchPushRequest, String>, BranchPushRequestRepositoryCustom {
     Page<BranchPushRequest> findByRequestedByOrderByRequestedAtDesc(String requestedBy, Pageable pageable);
-    List<BranchPushRequest> findAllValidBySnippetId(String snippetId);
 }

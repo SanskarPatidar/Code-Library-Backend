@@ -6,9 +6,9 @@ import com.sanskar.Code.Library.Backend.exception.NotFoundException;
 import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
 import com.sanskar.Code.Library.Backend.model.*;
 import com.sanskar.Code.Library.Backend.repository.branchpushrequest.BranchPushRequestRepository;
-import com.sanskar.Code.Library.Backend.repository.branchversion.BranchVersionRepository;
+import com.sanskar.Code.Library.Backend.repository.version.VersionRepository;
 import com.sanskar.Code.Library.Backend.repository.snippet.SnippetRepository;
-import com.sanskar.Code.Library.Backend.repository.snippetbranch.SnippetBranchRepository;
+import com.sanskar.Code.Library.Backend.repository.branch.BranchRepository;
 import com.sanskar.Code.Library.Backend.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,10 +29,10 @@ public class BranchPushRequestService {
     private SnippetRepository snippetRepository;
 
     @Autowired
-    private SnippetBranchRepository snippetBranchRepository;
+    private BranchRepository branchRepository;
 
     @Autowired
-    private BranchVersionRepository branchVersionRepository;
+    private VersionRepository versionRepository;
 
     @Autowired
     private Utils utils;
@@ -43,7 +43,7 @@ public class BranchPushRequestService {
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(request.getSnippetId())
                 .orElseThrow(() -> new NotFoundException("Snippet not found"));
 
-        Branch targetBranch = snippetBranchRepository.findByIdAndDeletedFalse(request.getTargetBranchId())
+        Branch targetBranch = branchRepository.findByIdAndDeletedFalse(request.getTargetBranchId())
                 .orElseThrow(() -> new NotFoundException("Target branch not found"));
 
         if(targetBranch.isDeleted())
@@ -81,7 +81,7 @@ public class BranchPushRequestService {
         BranchPushRequest pushRequest = branchPushRequestRepository.findByIdValid(requestId)
                 .orElseThrow(() -> new NotFoundException("Push request not found"));
 
-        Branch targetBranch = snippetBranchRepository.findByIdAndDeletedFalse(pushRequest.getTargetBranchId())
+        Branch targetBranch = branchRepository.findByIdAndDeletedFalse(pushRequest.getTargetBranchId())
                 .orElseThrow(() -> new NotFoundException("Target branch not found"));
 
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(targetBranch.getSnippetId())
@@ -103,7 +103,7 @@ public class BranchPushRequestService {
                 .language(pushRequest.getProposedLanguage())
                 .build();
 
-        branchVersionRepository.save(version);
+        versionRepository.save(version);
 
         if(targetBranch.getBranchName().equals("main")) {
             snippet.setMainUpdatedAt(LocalDateTime.now());

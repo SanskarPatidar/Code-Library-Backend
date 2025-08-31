@@ -1,56 +1,72 @@
 package com.sanskar.Code.Library.Backend.repository.branchpushrequest;
 
-//@DataMongoTest
-//@ActiveProfiles("dev")
-//@Disabled
-//class BranchPushRequestRepositoryTest {
-//
-//    @Autowired
-//    BranchPushRequestRepository repository;
-//
-//    @BeforeEach
-//    void setUp() {
-//        repository.deleteAll();
-//
-//        BranchPushRequest req1 = BranchPushRequest.builder()
-//                .id("1")
-//                .requestedBy("user1")
-//                .requestedAt(LocalDateTime.now().minusMinutes(10))
-//                .snippetId("s1")
-//                .build();
-//
-//        BranchPushRequest req2 = BranchPushRequest.builder()
-//                .id("2")
-//                .requestedBy("user1")
-//                .requestedAt(LocalDateTime.now())
-//                .snippetId("s2")
-//                .build();
-//
-//        BranchPushRequest req3 = BranchPushRequest.builder()
-//                .id("3")
-//                .requestedBy("user1")
-//                .requestedAt(LocalDateTime.now().plusMinutes(10))
-//                .snippetId("s1")
-//                .rejected(true)
-//                .build();
-//
-//        repository.saveAll(List.of(req1, req2, req3));
-//    }
-//
-//    @Test
-//    void findByRequesterUsernameOrderByRequestedAtDescTest(){
-//        var page = repository.findByRequesterUsernameOrderByRequestedAtDesc("user1", PageRequest.of(0, 10));
-//        assertEquals(3, page.getTotalElements());
-//        List<LocalDateTime> timeList = page.getContent()
-//                .stream()
-//                .map(BranchPushRequest::getRequestedAt)
-//                .toList();
-//        assertThat(timeList).isSortedAccordingTo(Comparator.reverseOrder());
-//    }
-//
-//    @Test
-//    void findBySnippetIdValidTest(){
-//        var page = repository.findAllBySnippetIdAndValidAsPage("s1", PageRequest.of(0, 10));
-//        assertEquals(1, page.getTotalElements());
-//    }
-//}
+import com.sanskar.Code.Library.Backend.model.BranchPushRequest;
+import com.sanskar.Code.Library.Backend.model.BranchPushRequestStatus;
+import com.sanskar.Code.Library.Backend.repository.MongoTestContainer;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.domain.PageRequest;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataMongoTest
+class BranchPushRequestRepositoryTest extends MongoTestContainer {
+
+    @Autowired
+    BranchPushRequestRepository repository;
+
+    @BeforeEach
+    void setUp() {
+        repository.deleteAll();
+        // Arrange
+        List<BranchPushRequest> requests = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            BranchPushRequest request = BranchPushRequest.builder()
+                    .id(String.valueOf(i))
+                    .snippetId("s0")
+                    .targetBranchId("b0")
+                    .requestedBy("r0")
+                    .requestedAt(LocalDateTime.now().plusMinutes(i * 10)) // 10, 20, 30... minutes
+                    .status(i % 2 == 0 ? BranchPushRequestStatus.PENDING : BranchPushRequestStatus.REJECTED)
+                    .build();
+
+            requests.add(request);
+        }
+        repository.saveAll(requests);
+    }
+
+    @Test
+    void findAllBySnippetIdAndValidAsPage() {
+        // Act
+        var page = repository.findAllBySnippetIdAndValidAsPage("s0", PageRequest.of(0, 10));
+
+        // Assert
+        assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(page.getContent())
+                .extracting(BranchPushRequest::getRequestedAt)
+                .isSortedAccordingTo(Comparator.reverseOrder());
+
+        assertThat(page.getContent())
+                .extracting(BranchPushRequest::getStatus)
+                .containsOnly(BranchPushRequestStatus.PENDING);
+    }
+
+    @Test
+    void findByRequestedByOrderByRequestedAtDesc() {
+        var result = repository.findByRequestedByOrderByRequestedAtDesc("r0", PageRequest.of(0, 10));
+
+        assertThat(result.getTotalElements()).isEqualTo(10);
+
+        assertThat(result.getContent())
+                .extracting(BranchPushRequest::getRequestedBy)
+                .isSortedAccordingTo(Comparator.reverseOrder());
+
+    }
+}

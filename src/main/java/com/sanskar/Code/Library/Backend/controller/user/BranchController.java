@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/snippet-branch")
-public class SnippetBranchController {
+public class BranchController {
 
     @Autowired
     private BranchService branchService;

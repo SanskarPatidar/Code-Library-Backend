@@ -8,9 +8,9 @@ import com.sanskar.Code.Library.Backend.exception.NotFoundException;
 import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
 import com.sanskar.Code.Library.Backend.model.*;
 import com.sanskar.Code.Library.Backend.repository.branchpushrequest.BranchPushRequestRepository;
-import com.sanskar.Code.Library.Backend.repository.branchversion.BranchVersionRepository;
+import com.sanskar.Code.Library.Backend.repository.version.VersionRepository;
 import com.sanskar.Code.Library.Backend.repository.snippet.SnippetRepository;
-import com.sanskar.Code.Library.Backend.repository.snippetbranch.SnippetBranchRepository;
+import com.sanskar.Code.Library.Backend.repository.branch.BranchRepository;
 import com.sanskar.Code.Library.Backend.security.repository.UserRepository;
 import com.sanskar.Code.Library.Backend.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +33,10 @@ public class SnippetService {
     private UserRepository userRepository;
 
     @Autowired
-    private SnippetBranchRepository branchRepository;
+    private BranchRepository branchRepository;
 
     @Autowired
-    private BranchVersionRepository branchVersionRepository;
+    private VersionRepository versionRepository;
 
     @Autowired
     private BranchPushRequestRepository branchPushRequestRepository;
@@ -82,7 +82,7 @@ public class SnippetService {
                 .build();
 
         branchRepository.save(branch);
-        branchVersionRepository.save(mainVersion);
+        versionRepository.save(mainVersion);
         return new PrivateSnippetResponseDTO(snippetRepository.save(snippet));
     }
 
@@ -133,9 +133,9 @@ public class SnippetService {
         branches.forEach(branch -> branch.setDeleted(true));
         branchRepository.saveAll(branches);
 
-        List<Version> versions = branchVersionRepository.findAllBySnippetIdAndDeletedFalse(snippetId);
+        List<Version> versions = versionRepository.findAllBySnippetIdAndDeletedFalse(snippetId);
         versions.forEach(version -> version.setDeleted(true));
-        branchVersionRepository.saveAll(versions);
+        versionRepository.saveAll(versions);
 
         List<BranchPushRequest> pushRequests = branchPushRequestRepository.findAllValidBySnippetId(snippetId);
         pushRequests.forEach(pr -> pr.setStatus(BranchPushRequestStatus.REJECTED));

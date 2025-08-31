@@ -1,4 +1,4 @@
-package com.sanskar.Code.Library.Backend.repository.branchversion;
+package com.sanskar.Code.Library.Backend.repository.version;
 
 import com.sanskar.Code.Library.Backend.model.Version;
 import org.springframework.data.domain.Page;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BranchVersionRepository extends MongoRepository<Version, String> {
+public interface VersionRepository extends MongoRepository<Version, String> {
     Page<Version> findByBranchIdOrderByVersionDesc(String branchId, Pageable pageable);
     List<Version> findAllBySnippetIdAndDeletedFalse(String snippetId);
     List<Version> findAllByBranchId(String branchId);

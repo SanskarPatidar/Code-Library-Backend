@@ -7,9 +7,9 @@ import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
 import com.sanskar.Code.Library.Backend.model.Version;
 import com.sanskar.Code.Library.Backend.model.Snippet;
 import com.sanskar.Code.Library.Backend.model.Branch;
-import com.sanskar.Code.Library.Backend.repository.branchversion.BranchVersionRepository;
+import com.sanskar.Code.Library.Backend.repository.version.VersionRepository;
 import com.sanskar.Code.Library.Backend.repository.snippet.SnippetRepository;
-import com.sanskar.Code.Library.Backend.repository.snippetbranch.SnippetBranchRepository;
+import com.sanskar.Code.Library.Backend.repository.branch.BranchRepository;
 import com.sanskar.Code.Library.Backend.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,10 +27,10 @@ public class VersionService {
     private SnippetRepository snippetRepository;
 
     @Autowired
-    private BranchVersionRepository branchVersionRepository;
+    private VersionRepository versionRepository;
 
     @Autowired
-    private SnippetBranchRepository snippetBranchRepository;
+    private BranchRepository branchRepository;
 
     @Autowired
     private Utils utils;
@@ -39,7 +39,7 @@ public class VersionService {
     public Page<BranchVersionResponseDTO> getVersions(String branchId, Pageable pageable) {
         String username = utils.getAuthenticatedUsername();
 
-        Branch branch = snippetBranchRepository.findByIdAndDeletedFalse(branchId)
+        Branch branch = branchRepository.findByIdAndDeletedFalse(branchId)
                 .orElseThrow(() -> new NotFoundException("Branch not found"));
 
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(branch.getSnippetId())
@@ -49,7 +49,7 @@ public class VersionService {
             throw new UnauthorizedException("Not authorized to view version history.");
         }
 
-        return branchVersionRepository.findByBranchIdOrderByVersionDesc(branchId, pageable)
+        return versionRepository.findByBranchIdOrderByVersionDesc(branchId, pageable)
                 .map(BranchVersionResponseDTO::new);
     }
 
@@ -57,10 +57,10 @@ public class VersionService {
     public BranchVersionResponseDTO getVersionById(String versionId) {
         String username = utils.getAuthenticatedUsername();
 
-        Version version = branchVersionRepository.findByIdAndDeletedFalse(versionId)
+        Version version = versionRepository.findByIdAndDeletedFalse(versionId)
                 .orElseThrow(() -> new NotFoundException("Version not found"));
 
-        Branch branch = snippetBranchRepository.findByIdAndDeletedFalse(version.getBranchId())
+        Branch branch = branchRepository.findByIdAndDeletedFalse(version.getBranchId())
                 .orElseThrow(() -> new NotFoundException("Branch not found"));
 
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(branch.getSnippetId())
@@ -76,10 +76,10 @@ public class VersionService {
     public BranchVersionResponseDTO restoreVersionOnSameBranch(String versionId) {
         String username = utils.getAuthenticatedUsername();
 
-        Version version = branchVersionRepository.findByIdAndDeletedFalse(versionId)
+        Version version = versionRepository.findByIdAndDeletedFalse(versionId)
                 .orElseThrow(() -> new NotFoundException("Version not found"));
 
-        Branch branch = snippetBranchRepository.findByIdAndDeletedFalse(version.getBranchId())
+        Branch branch = branchRepository.findByIdAndDeletedFalse(version.getBranchId())
                 .orElseThrow(() -> new NotFoundException("Branch not found"));
 
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(version.getSnippetId())
@@ -100,10 +100,10 @@ public class VersionService {
                 .code(version.getCode())
                 .build();
 
-        branchVersionRepository.save(latestVersion);
+        versionRepository.save(latestVersion);
 
         branch.setLatestVersion(branch.getLatestVersion() + 1);
-        branchVersionRepository.save(latestVersion);
+        versionRepository.save(latestVersion);
 
         if(branch.getBranchName().equals("main")) {
             snippet.setMainUpdatedAt(LocalDateTime.now());
@@ -120,7 +120,7 @@ public class VersionService {
     public BranchVersionResponseDTO pushVersion(BranchVersionRequestDTO versionRequest) {
         String username = utils.getAuthenticatedUsername();
 
-        Branch branch = snippetBranchRepository.findByIdAndDeletedFalse(versionRequest.getBranchId())
+        Branch branch = branchRepository.findByIdAndDeletedFalse(versionRequest.getBranchId())
                 .orElseThrow(() -> new NotFoundException("Branch not found"));
 
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(branch.getSnippetId())
@@ -141,10 +141,10 @@ public class VersionService {
                 .language(versionRequest.getLanguage())
                 .build();
 
-        branchVersionRepository.save(version);
+        versionRepository.save(version);
 
         branch.setLatestVersion(branch.getLatestVersion() + 1);
-        snippetBranchRepository.save(branch);
+        branchRepository.save(branch);
 
         if(branch.getBranchName().equals("main")) {
             snippet.setMainUpdatedAt(LocalDateTime.now());

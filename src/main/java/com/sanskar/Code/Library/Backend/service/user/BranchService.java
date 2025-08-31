@@ -10,9 +10,9 @@ import com.sanskar.Code.Library.Backend.exception.UnauthorizedException;
 import com.sanskar.Code.Library.Backend.model.Version;
 import com.sanskar.Code.Library.Backend.model.Snippet;
 import com.sanskar.Code.Library.Backend.model.Branch;
-import com.sanskar.Code.Library.Backend.repository.branchversion.BranchVersionRepository;
+import com.sanskar.Code.Library.Backend.repository.version.VersionRepository;
 import com.sanskar.Code.Library.Backend.repository.snippet.SnippetRepository;
-import com.sanskar.Code.Library.Backend.repository.snippetbranch.SnippetBranchRepository;
+import com.sanskar.Code.Library.Backend.repository.branch.BranchRepository;
 import com.sanskar.Code.Library.Backend.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,10 +34,10 @@ public class BranchService {
     private SnippetRepository snippetRepository;
 
     @Autowired
-    private SnippetBranchRepository snippetBranchRepository;
+    private BranchRepository branchRepository;
 
     @Autowired
-    private BranchVersionRepository branchVersionRepository;
+    private VersionRepository versionRepository;
 
     @Transactional
     public CreateBranchResponseDTO createBranch(CreateBranchRequestDTO createRequest){
@@ -49,13 +49,13 @@ public class BranchService {
         if(!username.equals(snippet.getAuthorName()))
             throw new UnauthorizedException("You are not authorized to create a branch for this snippet");
 
-        if (snippetBranchRepository.existsBySnippetIdAndBranchName(createRequest.getSnippetId(), createRequest.getBranchName()))
+        if (branchRepository.existsBySnippetIdAndBranchName(createRequest.getSnippetId(), createRequest.getBranchName()))
             throw new InvalidResourceStateException("Branch name already exists for this snippet.");
 
-        Version forkedVersion = branchVersionRepository.findByIdAndDeletedFalse(createRequest.getSourceVersionId())
+        Version forkedVersion = versionRepository.findByIdAndDeletedFalse(createRequest.getSourceVersionId())
                 .orElseThrow(() -> new NotFoundException("Source version not found"));
 
-        Branch forkedBranch = snippetBranchRepository.findByIdAndDeletedFalse(forkedVersion.getBranchId())
+        Branch forkedBranch = branchRepository.findByIdAndDeletedFalse(forkedVersion.getBranchId())
                 .orElseThrow(() -> new NotFoundException("Source branch not found"));
 
         Branch branch = Branch.builder()
@@ -69,7 +69,7 @@ public class BranchService {
                 .latestVersion(0)
                 .build();
 
-        snippetBranchRepository.save(branch);
+        branchRepository.save(branch);
 
         Version version = Version.builder()
                 .id(UUID.randomUUID().toString())
@@ -83,7 +83,7 @@ public class BranchService {
                 .language(forkedVersion.getLanguage())
                 .build();
 
-        branchVersionRepository.save(version);
+        versionRepository.save(version);
 
         return new CreateBranchResponseDTO(branch);
     }
@@ -98,14 +98,14 @@ public class BranchService {
             throw new UnauthorizedException("You are not authorized to view branches for this snippet");
         }
 
-        return snippetBranchRepository.findAllBySnippetIdAndDeletedFalse(snippetId, pageable);
+        return branchRepository.findAllBySnippetIdAndDeletedFalse(snippetId, pageable);
     }
 
     @Transactional
     public void deleteBranch(String branchId) {
         String username = utils.getAuthenticatedUsername();
 
-        Branch branch = snippetBranchRepository.findByIdAndDeletedFalse(branchId)
+        Branch branch = branchRepository.findByIdAndDeletedFalse(branchId)
                 .orElseThrow(() -> new NotFoundException("Branch not found"));
 
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(branch.getSnippetId())
@@ -127,15 +127,15 @@ public class BranchService {
     // sadly, no cascade deletion in spring MongoDB
     private void deleteBranchesAndVersionsRecursively(Branch branch) {
         branch.setDeleted(true);
-        snippetBranchRepository.save(branch);
+        branchRepository.save(branch);
 
-        List<Version> versions = branchVersionRepository.findAllByBranchId(branch.getId());
+        List<Version> versions = versionRepository.findAllByBranchId(branch.getId());
         for (Version version : versions) {
             version.setDeleted(true);
         }
-        branchVersionRepository.saveAll(versions);
+        versionRepository.saveAll(versions);
 
-        List<Branch> childBranches = snippetBranchRepository.findAllBySourceBranchId(branch.getId());
+        List<Branch> childBranches = branchRepository.findAllBySourceBranchId(branch.getId());
         for (Branch childBranch : childBranches) {
             if (!childBranch.isDeleted()) {
                 deleteBranchesAndVersionsRecursively(childBranch);
@@ -146,13 +146,13 @@ public class BranchService {
     public CreateBranchResponseDTO renameBranch(String branchId, String newName) {
         String username = utils.getAuthenticatedUsername();
 
-        Branch branch = snippetBranchRepository.findByIdAndDeletedFalse(branchId)
+        Branch branch = branchRepository.findByIdAndDeletedFalse(branchId)
                 .orElseThrow(() -> new NotFoundException("Branch not found"));
 
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(branch.getSnippetId())
                 .orElseThrow(() -> new NotFoundException("Snippet not found"));
 
-        if (snippetBranchRepository.existsBySnippetIdAndBranchName(snippet.getId(), newName))
+        if (branchRepository.existsBySnippetIdAndBranchName(snippet.getId(), newName))
             throw new InvalidResourceStateException("Branch name already exists for this snippet.");
 
         if (!username.equals(snippet.getAuthorName()))
@@ -164,7 +164,7 @@ public class BranchService {
 
 
         branch.setBranchName(newName);
-        snippetBranchRepository.save(branch);
+        branchRepository.save(branch);
 
         return new CreateBranchResponseDTO(branch);
     }
@@ -176,10 +176,10 @@ public class BranchService {
         Snippet snippet = snippetRepository.findByIdAndDeletedFalse(mergeRequest.getSnippetId())
                 .orElseThrow(() -> new NotFoundException("Snippet not found"));
 
-        Branch targetBranch = snippetBranchRepository.findByIdAndDeletedFalse(mergeRequest.getTargetBranchId())
+        Branch targetBranch = branchRepository.findByIdAndDeletedFalse(mergeRequest.getTargetBranchId())
                 .orElseThrow(() -> new NotFoundException("Target branch not found"));
 
-        Branch sourceBranch = snippetBranchRepository.findByIdAndDeletedFalse(mergeRequest.getSourceBranchId())
+        Branch sourceBranch = branchRepository.findByIdAndDeletedFalse(mergeRequest.getSourceBranchId())
                 .orElseThrow(() -> new NotFoundException("Source branch not found"));
 
         if(!username.equals(snippet.getAuthorName()) || !targetBranch.getSnippetId().equals(snippet.getId()) || !sourceBranch.getSnippetId().equals(snippet.getId()))
@@ -188,7 +188,7 @@ public class BranchService {
         if(targetBranch.isDeleted() || sourceBranch.isDeleted())
             throw new InvalidResourceStateException("Cannot merge deleted branches");
 
-        Version latestSourceVersion = branchVersionRepository.findTopByBranchIdOrderByVersionDesc(sourceBranch.getId())
+        Version latestSourceVersion = versionRepository.findTopByBranchIdOrderByVersionDesc(sourceBranch.getId())
                 .orElseThrow(() -> new NotFoundException("No versions found for source branch"));
 
         Version latestTargetVersion = Version.builder()
@@ -213,8 +213,8 @@ public class BranchService {
 
         targetBranch.setLatestVersion(targetBranch.getLatestVersion() + 1);
 
-        snippetBranchRepository.save(targetBranch);
-        branchVersionRepository.save(latestTargetVersion);
+        branchRepository.save(targetBranch);
+        versionRepository.save(latestTargetVersion);
         return new BranchVersionResponseDTO(latestTargetVersion);
     }
 }

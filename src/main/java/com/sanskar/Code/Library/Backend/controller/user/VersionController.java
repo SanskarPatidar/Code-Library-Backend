@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/snippet-version")
-public class BranchVersionController {
+public class VersionController {
 
     @Autowired
     private VersionService versionService;
