@@ -41,8 +41,4 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=SanskarPatidar_Code-Library-Backend \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Djacoco.check.skip=true \
-            -Dspring.profiles.active=prod # Making sure prod profile is used for github actions
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SanskarPatidar_Code-Library-Backend -Dspring.profiles.active=prod # Making sure prod profile is used for github actions
