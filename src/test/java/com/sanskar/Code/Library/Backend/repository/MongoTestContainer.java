@@ -10,27 +10,24 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.Duration;
+
 @Testcontainers // for container management
-public abstract class MongoTestContainer {
+public class MongoTestContainer {
 
     // We must not do testing with original database
 
-    @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0");
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:5.0")
+            .withExposedPorts(27017)
+            .waitingFor(Wait.forListeningPort()) // <-- use port wait, not healthcheck
+            .withStartupTimeout(Duration.ofSeconds(60)) // give more time
+            .withReuse(true);
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         registry.add("spring.data.mongodb.auto-index-creation", () -> "true");
-    }
-
-    @BeforeAll
-    static void setUp() {
         mongoDBContainer.start();
     }
 
-    @AfterAll
-    static void cleanUp() {
-        mongoDBContainer.stop();
-    }
 }

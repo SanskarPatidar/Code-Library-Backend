@@ -49,7 +49,6 @@ class SnippetRepositoryTest extends MongoTestContainer {
     })
     void findByCollaboratorIdAndDeletedFalse(String collaboratorId, int expected) {
         var result = repository.findByCollaboratorIdAndDeletedFalse(collaboratorId, PageRequest.of(0, 10));
-        System.out.println(result.getContent());
         assertThat(result.getTotalElements()).isEqualTo(expected);
 
         result.getContent().forEach(snippet -> {
